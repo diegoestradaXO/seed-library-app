@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
-  static const greenColor = Color(0xFF1ea75c);
+  static const blueColor = Color(0xFF8db2ba);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
             // Text('Biblioteca Heifer')
           ],
         ),
-        backgroundColor: greenColor,
+        backgroundColor: blueColor,
       ),
       body: SafeArea(
         child: Column(
@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
                     width: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: Colors.red.shade400,
+                      color: Color(0xFFcfe9a2),
                     ),
                   ),
                   Container(
@@ -62,7 +62,7 @@ class HomePage extends StatelessWidget {
                     width: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: greenColor,
+                      color: blueColor,
                     ),
                   ),
                   Container(
@@ -71,7 +71,7 @@ class HomePage extends StatelessWidget {
                     width: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: Colors.yellow.shade400,
+                      color: Color(0xfff7b054),
                     ),
                   ),
                 ],
