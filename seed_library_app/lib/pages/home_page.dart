@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,27 +14,59 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late DialogFlowtter _dialogFlowtter;
   static const blueColor = Color(0xFF8db2ba);
   final TextEditingController _userTextController = TextEditingController();
+  
+  /// Creamos una instancia de DialogFlowtter en nuestra clase
+
 
   /// Agrega una lista de tipo [Message]
-  List<Message> messages = [];
-
-  /// Crea la función sendMessage el cuál manejará
-  /// la lógica de nuestros mensajes
-  void sendMessage(String text) {
-    // Verifica que el texto del usuario no esté vacío
-    // si lo está, termina de ejecutar la función
-    if (text.isEmpty) return;
-
-    /// Añade nuestro texto enviado por el usuario en forma de
-    /// [Message] a nuestra lista y actualiza el estado del widget
-    setState(() {
-      Message userMessage = Message(text: DialogText(text: [text]));
-      messages.add(userMessage);
+  List<Map<String, dynamic>> messages = [];
+  void addMessage(Message message, [bool isUserMessage = false]) {
+    messages.add({
+      'message': message,
+      'isUserMessage': isUserMessage,
     });
   }
 
+  /// Crea la función sendMessage el cuál manejará
+  /// la lógica de nuestros mensajes
+  void sendMessage(String text) async {
+    if (text.isEmpty) return;
+    setState(() {
+      Message userMessage = Message(text: DialogText(text: [text]));
+      addMessage(userMessage, true);
+    });
+
+    /// Creamos la [query] que le enviaremos al agente
+    /// a partir del texto del usuario
+    QueryInput query = QueryInput(text: TextInput(text: text));
+
+    /// Esperamos a que el agente nos responda
+    /// El keyword [await] indica a la función que espere a que [detectIntent]
+    /// termine de ejecutarse para después continuar con lo que resta de la función
+    DetectIntentResponse res = await _dialogFlowtter.detectIntent(
+      queryInput: query,
+    );
+
+    /// Si el mensaje de la respuesta es nulo, no continuamos con la ejecución
+    /// de la función
+    if (res.message == null) return;
+
+    /// Si hay un mensaje de respuesta, lo agregamos a la lista y actualizamos
+    /// el estado de la app
+    setState(() {
+      addMessage(res.message!);
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    DialogFlowtter.fromFile().then((value) => _dialogFlowtter = value);
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,16 +186,16 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// Le agregamos el _ al principio del nombre para 
-/// indicar que esta es una clase privada que sólo se 
+/// Le agregamos el _ al principio del nombre para
+/// indicar que esta es una clase privada que sólo se
 /// usará dentro de este archivo
 class _MessagesList extends StatelessWidget {
   /// El componente recibirá una lista de mensajes
-  final List<Message> messages;
+  final List<Map<String, dynamic>> messages;
 
   const _MessagesList({
     Key? key,
-    
+
     /// Le indicamos al componente que la lista estará vacía en
     /// caso de que no se le pase como argumento alguna otra lista
     this.messages = const [],
@@ -174,18 +208,25 @@ class _MessagesList extends StatelessWidget {
     return ListView.separated(
       /// Indicamos el número de items que tendrá
       itemCount: messages.length,
-      
+
       // Agregamos espaciado
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-      
-      /// Indicamos que agregue un espacio entre cada elemento
+
       separatorBuilder: (_, i) => const SizedBox(height: 10),
       itemBuilder: (context, i) {
-        return Container(
-          /// Obtenemos el texto del mensaje y lo mostramos en un widget [Text]
-          child: Text(messages[i]?.text?.text![0] ?? ''),
+        
+        /// Obtenemos el objecto actual
+        var obj = messages[messages.length - 1 - i];
+        return _MessageContainer(
+          
+          /// Obtenemos el mensaje del objecto actual
+          message: obj['message'],
+          
+          /// Diferenciamos si es un mensaje o una respuesta
+          isUserMessage: obj['isUserMessage'],
         );
       },
+      reverse: true,
     );
   }
 }
@@ -196,7 +237,7 @@ class _MessageContainer extends StatelessWidget {
 
   const _MessageContainer({
     Key? key,
-    
+
     /// Indicamos que siempre se debe mandar un mensaje
     required this.message,
     this.isUserMessage = false,
@@ -216,16 +257,16 @@ class _MessageContainer extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               /// Cambia el color del contenedor del mensaje
-              color: isUserMessage ? Colors.blue : Colors.orange,
-              
+              color: isUserMessage ? _HomePageState.blueColor : Colors.orange,
+
               /// Le agrega border redondeados
               borderRadius: BorderRadius.circular(20),
             ),
-            
+
             /// Espaciado
             padding: const EdgeInsets.all(10),
             child: Text(
-              /// Obtenemos el texto del mensaje y lo pintamos. 
+              /// Obtenemos el texto del mensaje y lo pintamos.
               /// Si es nulo, enviamos un string vacío.
               message?.text?.text![0] ?? '',
               style: TextStyle(
