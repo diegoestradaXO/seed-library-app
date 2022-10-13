@@ -6,6 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 /// Importa el package dialog_flowtter
 import 'package:dialog_flowtter/dialog_flowtter.dart';
 
+extension StringExtension on String {
+    String capitalize() {
+      return "${this[0].toUpperCase()}${this.substring(1)}";
+    }
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -24,6 +30,9 @@ class _HomePageState extends State<HomePage> {
   /// Agrega una lista de tipo [Message]
   List<Map<String, dynamic>> messages = [];
   void addMessage(Message message, [bool isUserMessage = false]) {
+    if(message.text?.text![0] == ''){
+      message.text?.text![0] = 'Lo lamento, no pude entender';
+    }
     messages.add({
       'message': message,
       'isUserMessage': isUserMessage,
@@ -53,7 +62,7 @@ class _HomePageState extends State<HomePage> {
     /// Si el mensaje de la respuesta es nulo, no continuamos con la ejecución
     /// de la función
     if (res.message == null) return;
-
+    print(res.message!.text?.text![0]);
     /// Si hay un mensaje de respuesta, lo agregamos a la lista y actualizamos
     /// el estado de la app
     setState(() {
@@ -70,7 +79,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: blueColor,
       appBar: AppBar(
+        elevation: 0,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -88,6 +99,10 @@ class _HomePageState extends State<HomePage> {
           /// Esta parte se asegura que la caja de texto se posicione hasta abajo de la pantalla
           Expanded(
             child: Container(
+              decoration: const BoxDecoration(
+                // color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: const Radius.circular(40), topRight: const Radius.circular(40))
+              ),
               child: _MessagesList(messages: messages),
             ),
           ),
@@ -122,66 +137,6 @@ class _HomePageState extends State<HomePage> {
           ), // Fin del contenedor
         ],
       ),
-      //   body: SafeArea(
-      //     child: Column(
-      //       crossAxisAlignment: CrossAxisAlignment.start,
-      //       children: [
-      //         Container(
-      //           margin: EdgeInsets.all(20),
-      //           child: Column(
-      //             crossAxisAlignment: CrossAxisAlignment.start,
-      //             children: [
-      //               Text(
-      //                 'Bienvenido(a),',
-      //                 style: const TextStyle(
-      //                     fontWeight: FontWeight.bold, fontSize: 26),
-      //               ),
-      //               Text(
-      //                 'Selecciona un módulo!',
-      //                 style: const TextStyle(
-      //                     fontWeight: FontWeight.bold, fontSize: 24),
-      //               ),
-      //             ],
-      //           ),
-      //         ),
-      //         Center(
-      //           child: Column(
-      //             crossAxisAlignment: CrossAxisAlignment.center,
-      //             mainAxisAlignment: MainAxisAlignment.center,
-      //             children: [
-      //               Container(
-      //                 margin: EdgeInsets.only(bottom: 20, top: 30),
-      //                 height: 150,
-      //                 width: 200,
-      //                 decoration: BoxDecoration(
-      //                   borderRadius: BorderRadius.circular(10),
-      //                   color: Color(0xFFcfe9a2),
-      //                 ),
-      //               ),
-      //               Container(
-      //                 margin: EdgeInsets.only(bottom: 20),
-      //                 height: 150,
-      //                 width: 200,
-      //                 decoration: BoxDecoration(
-      //                   borderRadius: BorderRadius.circular(10),
-      //                   color: blueColor,
-      //                 ),
-      //               ),
-      //               Container(
-      //                 margin: EdgeInsets.only(bottom: 20),
-      //                 height: 150,
-      //                 width: 200,
-      //                 decoration: BoxDecoration(
-      //                   borderRadius: BorderRadius.circular(10),
-      //                   color: Color(0xfff7b054),
-      //                 ),
-      //               ),
-      //             ],
-      //           ),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
     );
   }
 }
@@ -235,12 +190,13 @@ class _MessageContainer extends StatelessWidget {
   final Message message;
   final bool isUserMessage;
 
+
   const _MessageContainer({
     Key? key,
 
     /// Indicamos que siempre se debe mandar un mensaje
     required this.message,
-    this.isUserMessage = false,
+    this.isUserMessage = false, 
   }) : super(key: key);
 
   @override
@@ -268,7 +224,12 @@ class _MessageContainer extends StatelessWidget {
             child: Text(
               /// Obtenemos el texto del mensaje y lo pintamos.
               /// Si es nulo, enviamos un string vacío.
-              message?.text?.text![0] ?? '',
+              /// 
+            (message.text?.text![0] ?? '¿Podrías intentar de nuevo?').split('|').length == 2  
+            && isUserMessage == false ? 'El módulo que buscas es el de ' 
+            +(message.text?.text![0].split("|")[0] ?? '¿Podrías intentar de nuevo?') 
+            +', y la sección es la de ' + (message.text?.text![0].split("|")[1] ?? 
+            '¿Podrías intentar de nuevo?') + '.': message.text?.text![0] ?? '¿Podrías intentar de nuevo?' ,
               style: TextStyle(
                 color: Colors.white,
               ),
